@@ -1,6 +1,7 @@
 # Table of contents
 
-* [User Story Document](user-story-document.md)
+* [User Story Document](README.md)
 * [Product Requirements Document](product-requirements-document.md)
-* [Page 2](page-2.md)
-* [README](README.md)
+* [System Architecture Design](page-2.md)
+* [Business Process Design](business-process-design.md)
+* [README](<README (1).md>)

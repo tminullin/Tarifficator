@@ -1,3 +1,7 @@
+---
+icon: align-justify
+---
+
 # Product Requirements Document
 
 ***
@@ -7,11 +11,10 @@
 | Item          | Content                                                                                        |
 | ------------- | ---------------------------------------------------------------------------------------------- |
 | Название      | Микросервис журналирования статусов движения товаров в маркетплейсе (Tracking Journal Service) |
-| Версия        | v1.0 / Phase 1 Development                                                                     |
+| Версия        | v1.0                                                                                           |
 | Автор         | Product Manager                                                                                |
 | Creation Date | 2025-05-15                                                                                     |
 | Last Updated  | 2025-05-15                                                                                     |
-| Команда       | Product Team, Engineering Lead, QA Lead, Operations Lead                                       |
 
 ***
 
@@ -40,16 +43,12 @@
 
 * **Операционный контролер `(UR-001)`**:
   * Роль: Мониторинг и управление логистическими операциями в реальном времени.
-  * Опыт: в логистике, управление цепочками поставок.
-  * Навыки: Работа с системами мониторинга, аналитика, принятие быстрых оперативных решений.
   * Основные потребности:
     * Полная видимость всех этапов доставки.
     * Уведомления о нарушениях SLA в реальном времени.
     * Инструменты для быстрого реагирования на инциденты.
 * **Системный администратор / DevOps `(UR-004)`**:
   * Роль: Обеспечение работоспособности, масштабируемости и наблюдаемости системы.
-  * Опыт: системноt администрирование, DevOps.
-  * Навыки: Управление инфраструктурой, мониторинг, CI/CD, работа с highload системами.
   * Основные потребности:
     * Надежная и масштабируемая архитектура.
     * Эффективный мониторинг и алертинг.
@@ -59,7 +58,7 @@
 
 ### 4. Описание функций
 
-#### 4.1 Feature Structure Diagram (High-Level Architecture)
+#### 4.1 Диаграмма компонентов системы
 
 ```mermaid
 graph TD
@@ -69,9 +68,9 @@ graph TD
         D[Supplier Integration] --> B;
     end
     subgraph Tracking Journal Service
-        B --> E{Message Queue (e.g., Kafka)};
+        B --> E{Message Queue Kafka};
         E --> F[Event Processor Service];
-        F --> G[Database (e.g., PostgreSQL/Cassandra)];
+        F --> G[Database PostgreSQL];
         F --> H[SLA Monitoring Service];
         G --> I[Read API for Journal Data];
         H --> J[SLA Violation Detector];
@@ -87,40 +86,29 @@ graph TD
         F --> N[Metrics/Tracing Collector];
         H --> N;
         J --> N;
-        N --> O[Monitoring Dashboard (e.g., Grafana)];
+        N --> O[Monitoring Dashboard Grafana];
     end
     B --> N;
 ```
 
-\[ARCH-1.0]
+\[Диаграмма - 1.0]
 
-#### 4.2 Core Feature List
+#### 4.2 Ключевые функции
 
-| Core Feature                          | Sub Feature                                                                      |
-| ------------------------------------- | -------------------------------------------------------------------------------- |
-| Event Ingestion & Journaling          | Event reception, Validation, Storage, Data exposure                              |
-| SLA Monitoring & Violation Detection  | SLA parameter configuration, Real-time monitoring, Violation detection, Alerting |
-| Operational Controller Workspace      | Real-time dashboard, Violation list, Action creation, Reporting                  |
-| Highload Architecture & Observability | Scalability, Reliability, Monitoring, Tracing, Logging                           |
+| Функция                                        | Подфункции                                                                                 |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Журналирование событий                         | Прием событий, Валидация, Хранение, Предоставление данных                                  |
+| Мониторинг SLA и обнаружение нарушений         | Настройка параметров SLA, Мониторинг в реальном времени, Обнаружение нарушений, Оповещение |
+| Рабочее пространство операционного контроллера | Панель управления в реальном времени, Список нарушений, Создание действий, Отчетность      |
+| Высоконагруженная архитектура и наблюдаемость  | Масштабируемость, Надежность, Мониторинг, Трассировка, Логирование                         |
 
-#### 4.3 Detailed Requirement for Core Features
+#### 4.3 Функциональные требования
 
-@@@LOOP\_START@@@
 
-**Feature Summary: F1-001 - Event Ingestion and Journaling**
 
-| **Category**                   | **Content**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Feature ID**                 | F1-001                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| **Feature Name**               | Event Ingestion and Journaling                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| **User Story ID**              | US-001, US-002, US-003                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| **Short Description**          | Сбор, валидация и сохранение событий статусов движения товаров в централизованный журнал.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| **Business Context**           | Является основой для всех последующих функций: мониторинга, аналитики и операционного контроля. Обеспечивает единый источник истины о перемещении товара.                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| **Goals / Acceptance Metrics** | <p>- 99.99% точность записи событий.<br>- Задержка приема и записи события &#x3C; 500 мс.<br>- Обработка до 10,000 событий/сек (MVP), масштабирование до 100,000+ событий/сек (Final).<br>- Идемпотентность обработки событий.</p>                                                                                                                                                                                                                                                                                                                                                            |
-| **Dependencies**               | <p>- Микросервис Склада (Warehouse Service)<br>- Микросервис Курьера (Courier Service)<br>- Возможно, Микросервис Поставщика (Supplier Service)<br>- Message Queue (e.g., Kafka)<br>- База данных (PostgreSQL/Cassandra)</p>                                                                                                                                                                                                                                                                                                                                                                  |
-| **Business Rules**             | <p>- Каждый статус должен быть привязан к уникальному идентификатору товара (<code>deliveryUnitId</code>).<br>- События должны содержать временную метку (<code>timestamp</code>).<br>- Обработка событий должна быть идемпотентной (повторная отправка одного и того же события не должна приводить к дублированию записей).<br>- Допустимые статусы для склада: "Принял", "Отправил".<br>- Допустимые статусы для курьера: "взял", "в работе", "отдал".<br>- Если источник - поставщик, определяются статусы (например, "Отгружен", "Передан в доставку") - <em>требует уточнения.</em></p> |
-| **State Transitions (Brief)**  | State tracking for each `deliveryUnitId`: `Supplier_Shipment_Pending` → `Warehouse_Received` → `Warehouse_Shipped` → `Courier_Accepted` → `Courier_In_Progress` → `Courier_Delivered` / `Delivery_Failed`. (This is illustrative; actual states will evolve based on events).                                                                                                                                                                                                                                                                                                                 |
-| **Notes / Constraints**        | <p>- Географическая распределенность требует учета задержек сети.<br>- Высокая нагрузка требует использования асинхронных паттернов и горизонтально масштабируемых решений ( Kafka, Cassandra/Sharded PostgreSQL).<br>- Данные могут нуждаться в партиционировании по региону/городу для масштабирования.<br>- Обеспечить безопасность передачи данных.</p>                                                                                                                                                                                                                                   |
+**F1-001 -** Журналирование событий
+
+<table data-header-hidden><thead><tr><th width="244.79998779296875"></th><th></th></tr></thead><tbody><tr><td><strong>Category</strong></td><td><strong>Content</strong></td></tr><tr><td><strong>Feature ID</strong></td><td>F1-001</td></tr><tr><td><strong>Feature Name</strong></td><td>Журналирование событий</td></tr><tr><td><strong>User Story ID</strong></td><td>US-001, US-002, US-003</td></tr><tr><td><strong>Short Description</strong></td><td>Сбор, валидация и сохранение событий статусов движения товаров в централизованный журнал.</td></tr><tr><td><strong>Business Context</strong></td><td>Является основой для всех последующих функций: мониторинга, аналитики и операционного контроля. Обеспечивает единый источник истины о перемещении товара.</td></tr><tr><td><strong>Goals / Acceptance Metrics</strong></td><td>- 99.99% точность записи событий.<br>- Задержка приема и записи события &#x3C; 500 мс.<br>- Обработка до 10,000 событий/сек (MVP), масштабирование до 100,000+ событий/сек (Final).<br>- Идемпотентность обработки событий.</td></tr><tr><td><strong>Dependencies</strong></td><td>- Микросервис Склада (Warehouse Service)<br>- Микросервис Курьера (Courier Service)<br>- Микросервис Заказы клиентов (Customer Service)<br>- Очередь сообщений (Kafka)<br>- База данных (PostgreSQL)</td></tr><tr><td><strong>Business Rules</strong></td><td>- Каждый статус должен быть привязан к уникальному идентификатору товара (<code>deliveryUnitId</code>).<br>- События должны содержать временную метку (<code>timestamp</code>).<br>- Обработка событий должна быть идемпотентной (повторная отправка одного и того же события не должна приводить к дублированию записей).<br>- Допустимые статусы для склада: "Принял", "Отправил".<br>- Допустимые статусы для курьера: "взял", "в работе", "отдал".<br></td></tr><tr><td><strong>State Transitions (Brief)</strong></td><td>State tracking for each <code>deliveryUnitId</code>: <code>Supplier_Shipment_Pending</code> → <code>Warehouse_Received</code> → <code>Warehouse_Shipped</code> → <code>Courier_Accepted</code> → <code>Courier_In_Progress</code> → <code>Courier_Delivered</code> / <code>Delivery_Failed</code>. (This is illustrative; actual states will evolve based on events).</td></tr><tr><td><strong>Notes / Constraints</strong></td><td>- Географическая распределенность требует учета задержек сети.<br>- Высокая нагрузка требует использования асинхронных паттернов и горизонтально масштабируемых решений ( Kafka, Cassandra/Sharded PostgreSQL).<br>- Данные могут нуждаться в партиционировании по региону/городу для масштабирования.<br>- Обеспечить безопасность передачи данных.</td></tr></tbody></table>
 
 #### F1-001 Input / Output / Error (Framework I/O & Error)
 
